@@ -10,7 +10,7 @@ WINDOW_SECONDS = 60   # Time window in seconds
 
 
 def is_rate_limited(ip):
-    key = f"rate:{ip}"
+    key = f'rate:{ip}'
     current = r.incr(key)
     if current == 1:
         # First request — set expiry on key
@@ -20,7 +20,8 @@ def is_rate_limited(ip):
 
 @app.route("/")
 def home():
-    ip = request.remote_addr()
+    ip = request.remote_addr
+
     if is_rate_limited(ip):
         ttl = r.ttl(f"rate:{ip}")
         return jsonify({
@@ -30,5 +31,8 @@ def home():
 
     return jsonify({
         "message": "Request successful",
-        "remaining": RATE_LIMIT - r.get(f"rate:{ip}")
+        "remaining": RATE_LIMIT - int(r.get(f"rate:{ip}"))
     })
+
+if __name__ == "__main__":
+    app.run(debug=True)
